@@ -8,22 +8,44 @@
 	rel="stylesheet"
 	integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
 	crossorigin="anonymous">
+	
+<style>
+html{
+	margin-left: 3%;
+	margin-right: 18%;
+	margin-top: 4px;
+}
+
+#entry-data .col-lg{
+	margin: 5px;
+	
+} 
+
+#entry-data input{
+	width:430px;
+	height: 40px;
+	margin-top: 2px;
+	margin-left: -3px;
+	margin-bottom: -9px;
+} 
+</style>
+	
 </head>
 <body>
 
 	<h1>REST API using Java and Spring</h1>
 
 	<form id="user-input-form" class=".was-validated">
-		<div class="row g-2">
-			<div class="col-sm">
+		<div class="row" id="entry-data">
+			<div class="col-sm" >
 				<input type="text" class="form-control" id="id"
 					placeholder="User id" aria-label="id" readonly>
 			</div>
-			<div class="col-lg">
+			<div class="col-sm">
 				<input type="text" class="form-control" id="nome"
 					placeholder="Enter user's name" aria-label="nome" required>
 			</div>
-			<div class="col-lg">
+			<div class="col-sm">
 				<input type="number" class="form-control" id="idade"
 					placeholder="Enter user's age" aria-label="idade" required>
 			</div>
@@ -48,7 +70,7 @@
 						aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<form>
+					<form id="name-search">
 						<div class="mb-3">
 							<label for="nameSearch" class="col-form-label">Enter name
 								or part of it:</label> <input type="text" class="form-control"
@@ -58,6 +80,7 @@
 
 						<br>
 					</form>
+					<div style="height:320px;overflow:scroll">
 					<table class="table table-striped" id="userTable">
 						<thead class="table-dark">
 							<tr>
@@ -65,13 +88,14 @@
 								<th scope="col">Name</th>
 								<th scope="col">Age</th>
 								<th scope="col">Update</th>
+								<th scope="col">Delete</th>
 							</tr>
 						</thead>
-						<tbody class="table-striped">
+						<tbody class="table-striped" id="t-body">
 							
 						</tbody>
 					</table>
-				</div>
+					</div>
 
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary"
@@ -95,6 +119,7 @@
 	<script type="text/javascript">
 	
 		function searchUser(){
+			
 			var nome = $('#nameSearch').val();
 			
 			if(nome != null && nome.trim() != ''){
@@ -107,26 +132,37 @@
 						
 						$('#userTable > tbody > tr').remove();
 						
-						for(var i=0; i<response.length; i++){
-							$('#userTable > tbody').append('<tr><td>'+response[i].id+'</td><td>'+response[i].nome+'</td><td>'
-									+response[i].idade+'</td><td><button type="button" class="btn btn-info" onclick="updateUser('+response[i].id+')">Update</button></td></tr>');
+						for (var i = 0; i < response.length; i++) {
+							$('#userTable > tbody')
+								.append(
+										'<tr id="'+response[i].id+'"><td>'
+												+ response[i].id
+												+ '</td><td>'
+												+ response[i].nome
+												+ '</td><td>'
+												+ response[i].idade
+												+ '</td><td><button type="button" class="btn btn-info" onclick="updateUser('
+												+ response[i].id
+												+ ')">Update</button></td><td><button type="button" class="btn btn-danger" onclick="deleteUser('
+												+ response[i].id
+												+ ')">Delete</button></td></tr>');
+							}
+
 						}
-						
-					}
-				}).fail(function(xhr, status, errorThrown) {
-					alert("Error trying to find user!" + xhr.responseText);
-				});
-				
-			}else{
+						}).fail(
+						function(xhr, status, errorThrown) {
+							alert("Error trying to find user!"
+									+ xhr.responseText);
+						});
+
+			} else {
 				alert("Please enter a name or part of it to continue.")
 			}
-			
-		}	
-	
-		
-		function updateUser(id){
-			
-			
+
+		}
+
+		function updateUser(id) {
+
 			$.ajax({
 				type : "GET",
 				url : "userbyid",
@@ -136,24 +172,47 @@
 					nome = $("#nome").val(response.nome);
 					idade = $("#idade").val(response.idade);
 					$('#searchModal').modal('hide');
-					
-				}
-			}).fail(function(xhr, status, errorThrown) {
-				if (status == 404){
-					alert("Error trying to retrieve information!" + xhr.responseText);
-				}
-			});
-			
-		}
-	
-		
-		
 
+				}
+			}).fail(
+					function(xhr, status, errorThrown) {
+						if (status == 404) {
+							alert("Error trying to retrieve information!"
+									+ xhr.responseText);
+						}
+					});
+
+		}
+
+		function deleteUser(id) {
+			
+			if(confirm("Do you want to delete this user?")){
+	
+				$.ajax({
+					type : "DELETE",
+					url : "delete",
+					data : "iduser=" + id,
+					success : function(response) {
+						$('#' + id).remove();
+						alert("User deleted from database");
+					}
+				}).fail(
+						function(xhr, status, errorThrown) {
+							if (status == 404) {
+								alert("Error trying to retrieve information!"
+										+ xhr.responseText);
+						}
+				});
+			}
+		}
+		
+		
 		function saveUser() {
 			var id = $("#id").val();
 			var nome = $("#nome").val();
 			var idade = $("#idade").val();
 			if (nome != null && nome.trim() != '') {
+				
 				$.ajax({
 					type : "POST",
 					url : "salvar",
@@ -172,7 +231,8 @@
 				}).fail(function(xhr, status, errorThrown) {
 					alert("Error trying to save" + xhr.responseText);
 				});
-			} else{
+			} else {
+				$('#nome').focus();
 				alert("Please enter username to continue!")
 			}
 		}
