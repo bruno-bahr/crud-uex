@@ -1,8 +1,6 @@
 package br.com.springboot.crud_rest_api.controllers;
 
-import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,7 +44,7 @@ public class GreetingsController {
         return "Hello " + name + "!";
     }
     
-    @RequestMapping(value = "/home/", method = RequestMethod.GET)
+    @RequestMapping(value = "/home", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public String homeText( ) {
     	String msg = "Project Home";

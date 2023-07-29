@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+	crossorigin="anonymous">
+</head>
+<body>
+
+	<h1>REST API using Java and Spring</h1>
+
+	<form id="user-input-form" class=".was-validated">
+		<div class="row g-2">
+			<div class="col-sm">
+				<input type="text" class="form-control" id="id"
+					placeholder="User id" aria-label="id" readonly>
+			</div>
+			<div class="col-lg">
+				<input type="text" class="form-control" id="nome"
+					placeholder="Enter user's name" aria-label="nome" required>
+			</div>
+			<div class="col-lg">
+				<input type="number" class="form-control" id="idade"
+					placeholder="Enter user's age" aria-label="idade" required>
+			</div>
+		</div>
+	</form>
+	<br>
+	<button type="button" class="btn btn-primary" onClick="saveUser()">Save</button>
+	<button type="button" class="btn btn-secondary"
+		onClick="document.getElementById('user-input-form').reset();">Reset</button>
+	<button type="button" class="btn btn-danger" onClick="updateUser()"
+		data-bs-toggle="modal" data-bs-target="#searchModal">Search</button>
+
+
+	<div class="modal fade" id="searchModal" tabindex="-1"
+		aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">User
+						Search</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="mb-3">
+							<label for="nameSearch" class="col-form-label">Enter name
+								or part of it:</label> <input type="text" class="form-control"
+								id="nameSearch">
+
+						</div>
+
+						<br>
+					</form>
+					<table class="table table-striped" id="userTable">
+						<thead class="table-dark">
+							<tr>
+								<th scope="col">Id</th>
+								<th scope="col">Name</th>
+								<th scope="col">Age</th>
+								<th scope="col">Update</th>
+							</tr>
+						</thead>
+						<tbody class="table-striped">
+							
+						</tbody>
+					</table>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-success"
+						onclick="searchUser()">Search</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="https://code.jquery.com/jquery-3.7.0.min.js"
+		integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+		crossorigin="anonymous"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+		crossorigin="anonymous"></script>
+
+	<script type="text/javascript">
+	
+		function searchUser(){
+			var nome = $('#nameSearch').val();
+			
+			if(nome != null && nome.trim() != ''){
+				
+				$.ajax({
+					type : "GET",
+					url : "buscarPorNome",
+					data : "name=" + nome,
+					success : function(response) {
+						
+						$('#userTable > tbody > tr').remove();
+						
+						for(var i=0; i<response.length; i++){
+							$('#userTable > tbody').append('<tr><td>'+response[i].id+'</td><td>'+response[i].nome+'</td><td>'
+									+response[i].idade+'</td><td><button type="button" class="btn btn-info" onclick="updateUser('+response[i].id+')">Update</button></td></tr>');
+						}
+						
+					}
+				}).fail(function(xhr, status, errorThrown) {
+					alert("Error trying to find user!" + xhr.responseText);
+				});
+				
+			}else{
+				alert("Please enter a name or part of it to continue.")
+			}
+			
+		}	
+	
+		
+		function updateUser(id){
+			
+			
+			$.ajax({
+				type : "GET",
+				url : "userbyid",
+				data : "iduser=" + id,
+				success : function(response) {
+					id = $("#id").val(response.id);
+					nome = $("#nome").val(response.nome);
+					idade = $("#idade").val(response.idade);
+					$('#searchModal').modal('hide');
+					
+				}
+			}).fail(function(xhr, status, errorThrown) {
+				if (status == 404){
+					alert("Error trying to retrieve information!" + xhr.responseText);
+				}
+			});
+			
+		}
+	
+		
+		
+
+		function saveUser() {
+			var id = $("#id").val();
+			var nome = $("#nome").val();
+			var idade = $("#idade").val();
+			if (nome != null && nome.trim() != '') {
+				$.ajax({
+					type : "POST",
+					url : "salvar",
+					data : JSON.stringify({
+						id : id,
+						nome : nome,
+						idade : idade
+					}),
+					contentType : "application/json; charset=utf-8",
+					success : function(response) {
+
+						$("#id").val(response.id);
+						alert("Data successfully saved.");
+
+					}
+				}).fail(function(xhr, status, errorThrown) {
+					alert("Error trying to save" + xhr.responseText);
+				});
+			} else{
+				alert("Please enter username to continue!")
+			}
+		}
+	</script>
+
+</body>
+
+</html>
